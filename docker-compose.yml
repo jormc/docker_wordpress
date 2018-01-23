@@ -22,7 +22,6 @@ services:
     image: wordpress
     ports:
       - "80:80"
-    restart: always
     volumes:
       - ./wordpress/wp-content/themes:/var/www/html/wp-content/themes
     environment:
