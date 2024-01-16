@@ -1,29 +1,60 @@
-version: '2'
+version: "3.8"
 
 services:
-
-  database:
-    image: mysql
-    volumes:
-      - ./database:/var/lib/mysql
-    ports:
-      - "3306:3306"
-    expose:
-      - 3306
-    environment:
-      MYSQL_ROOT_PASSWORD: wordpress
-      MYSQL_DATABASE: wordpress
-      MYSQL_USER: wordpress
-      MYSQL_PASSWORD: wordpress
-
+  
   wordpress:
+    image: wordpress:latest
+    container_name: wordpress
+    volumes:
+      - wp_data:/var/www/html
+      - $PWD/wordpress/wp-content/themes:/var/www/html/wp-content/themes
+    ports:
+      - 80:80
+    expose: 
+      - 80
+    environment:
+      - WORDPRESS_DB_HOST=database
+      - WORDPRESS_DB_USER=wordpress
+      - WORDPRESS_DB_PASSWORD=wordpress
+      - WORDPRESS_DB_NAME=wordpress
     depends_on:
       - database
-    image: wordpress
-    ports:
-      - "80:80"
-    volumes:
-      - ./wordpress/wp-content/themes:/var/www/html/wp-content/themes
+    networks:
+      - wp-network
+
+  database:
+    image: mysql:latest
+    container_name: database
+    command: '--default-authentication-plugin=mysql_native_password'
     environment:
-      WORDPRESS_DB_HOST: database:3306
-      WORDPRESS_DB_PASSWORD: wordpress
+      - MYSQL_DATABASE=wordpress
+      - MYSQL_USER=wordpress
+      - MYSQL_PASSWORD=wordpress
+      - MYSQL_ROOT_PASSWORD=12345
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - wp-network
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: phpmyadmin
+    ports:
+      - 81:80
+    environment:
+      - PMA_ARBITRARY=1
+      - PMA_HOST=database
+      - PMA_USER=wordpress
+      - PMA_PASSWORD=wordpress
+      - MYSQL_ROOT_PASSWORD='12345'
+    depends_on:
+      - database
+    networks:
+      - wp-network
+
+networks:
+  wordpress:
+
+volumes:
+  wp_data:
+  db_data:
