@@ -53,7 +53,7 @@ services:
       - wp-network
 
 networks:
-  wordpress:
+  wp-network:
 
 volumes:
   wp_data:
